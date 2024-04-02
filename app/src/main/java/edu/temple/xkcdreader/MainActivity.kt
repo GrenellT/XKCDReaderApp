@@ -1,7 +1,10 @@
 package edu.temple.xkcdreader
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -38,7 +41,24 @@ class MainActivity : AppCompatActivity() {
                 fetchComic(comicNumberEditText.text.toString())
             }
         }
+// Register your app to intercept a url
+        // User approves
+        intent.action?.run {
+            if (this == Intent.ACTION_VIEW) {
+                intent.data?.let {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        // TODO Fix String Extraction
+                        fetchComic(it.path!!.substring(4))
+                    }
+                }
+            }
+        }
 
+        findViewById<Button>(R.id.requestButton).setOnClickListener {
+            intent = Intent(ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+                Uri.parse("package:${packageName}"))
+            startActivity(intent)
+        }
     }
 
     suspend fun fetchComic(comicId: String) {
